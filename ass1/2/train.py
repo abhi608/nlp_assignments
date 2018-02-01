@@ -1,6 +1,5 @@
 from __future__ import division
 import json
-import pickle
 import numpy as np
 from sklearn import svm
 from random import shuffle
@@ -43,13 +42,13 @@ X_train = np.asarray(data_X_train)
 Y_train = np.asarray(data_Y_train)
 
 sample_size = X_train.shape[0]
-
+print X_train.shape
 X_train = X_train.reshape(sample_size,-1)
 X_test = X_train[550:663,:]
 Y_test = Y_train[550:663]
 X_train = X_train[0:550,:]
 Y_train = Y_train[0:550]
-# print X_train.shape
+print X_train.shape
 # print Y_train.shape
 # print X_test.shape
 # print Y_test.shape

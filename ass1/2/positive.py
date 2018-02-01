@@ -23,12 +23,6 @@ for c in range(10):
 	one_hot[str(c)] = count
 	count = count + 1
 
-tmp = ['[',' ','.',']','/','<','>',',','\n',';',':','-','?',"'",')','(','!','*']
-
-for c in tmp:
-	one_hot[c] = count
-	count = count + 1
-
 # print one_hot, len(one_hot)
 
 # Read the text file character by character
@@ -40,8 +34,20 @@ while 1:
     if char not in vocab:
     	vocab.append(char)
 file.close()
+print vocab
+print("vocab size: ", len(vocab))
+
+# add special characters to one_hot dict
+tmp = ["\n","["," ",".","]","<","/",">",",",";",":","-","?","'","(",")","!","*"]
+
+for c in tmp:
+	one_hot[c] = count
+	count = count + 1
+
 
 # print arr
+
+print len(one_hot)
 
 # fill the pre_process array
 for i,_ in enumerate(arr):
@@ -50,7 +56,7 @@ for i,_ in enumerate(arr):
 		# print "test", i, arr[i]
 		if arr[i] == '<' and arr[i+1] == '/' and arr[i+2] == 's' and arr[i+3] == '>': # If we found a sentence terminator
 			cur = 7;
-			# store the characters in left and right window(current window size is 3)
+			# store the characters in left and right window(current window size is 4-3)
 			if arr[i+cur] != ' ' and arr[i+cur] != '\n':
 				char1 = ' '
 				char2 = arr[i+cur]
@@ -62,10 +68,15 @@ for i,_ in enumerate(arr):
 			char_1 = arr[i-1]
 			char_2 = arr[i-2]
 			char_3 = arr[i-3]
-			# print cur, arr[i], char1, char2, char3, char_1, char_2, char_3
+			char_4 = arr[i-4]
+			# print cur, arr[i], char1, char2, char3, char_1, char_2, char_3, char_4
 			
 			#Vectorize the current window
 			obj = []
+			tmp = [0]*len(one_hot)
+			tmp[one_hot[char_4]] = 1
+			obj.append(tmp)
+
 			tmp = [0]*len(one_hot)
 			tmp[one_hot[char_3]] = 1
 			obj.append(tmp)
@@ -93,7 +104,7 @@ for i,_ in enumerate(arr):
 			# store the current data point in the pre_process array
 			pre_process.append(obj)
 			
-print pre_process
+# print pre_process
 
 # Dump the pre_process array in a file
 with open('positive_data.json', 'w') as outfile:
