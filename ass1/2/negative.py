@@ -65,6 +65,7 @@ for i,_ in enumerate(arr):
 			char_2 = arr[i]
 			char_3 = arr[i-1]
 			char_4 = arr[i-2]
+			# print arr[i-3], arr[i-2], arr[i-1], arr[i], arr[i+1], arr[i+2], arr[i+3]
 			# print "test1", arr[i], char1, char2, char3, char_1, char_2, char_3, char_4
 			obj = []
 			tmp = [0]*len(one_hot)

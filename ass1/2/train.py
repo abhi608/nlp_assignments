@@ -4,6 +4,7 @@ import numpy as np
 from sklearn import svm
 from random import shuffle
 from sklearn.externals import joblib
+from sklearn.model_selection import cross_val_score
 
 with open('positive_data.json', 'r') as f:
     data1 = json.load(f)
@@ -42,13 +43,13 @@ X_train = np.asarray(data_X_train)
 Y_train = np.asarray(data_Y_train)
 
 sample_size = X_train.shape[0]
-print X_train.shape
+# print X_train.shape
 X_train = X_train.reshape(sample_size,-1)
 X_test = X_train[550:663,:]
 Y_test = Y_train[550:663]
 X_train = X_train[0:550,:]
 Y_train = Y_train[0:550]
-print X_train.shape
+# print X_train.shape
 # print Y_train.shape
 # print X_test.shape
 # print Y_test.shape
@@ -58,6 +59,8 @@ classifier = svm.SVC(gamma=0.05)
 # print classifier
 
 classifier.fit(X_train, Y_train)
+
+print(cross_val_score(classifier, X_train, Y_train))
 
 joblib.dump(classifier, 'model.pkl')
 

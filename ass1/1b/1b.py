@@ -1,6 +1,6 @@
 import re
 
-file = open("../fullTest.txt", "r")
+file = open("../test.txt", "r")
 text = file.read()
 file.close()
 
