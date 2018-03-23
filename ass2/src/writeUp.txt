@@ -1,0 +1,45 @@
+Preprocessing:
+1. Some of the text files conatined html tag <br /> which needed to be removed. I wrote a python scipt <src/preprocess.py> which reads all the files(train+test) one by one and deletes all the occurances of html tag <br /> from the files.
+2. There is no need to do stop-word removal or stemming at this step as the <scikit> library has methods which can do this.
+
+Helper Classes(src/util.py):
+Data: This class reads all the data(train+test) and its function <getData()> returns a tuple(train_corpus, test_corpus, Y_train, Y_test). Here, train_corpus and test_corpus is a list of strings(a single review file is considered a single string). Y_train and Y_test is a list of integers(0 and 1) where 0 indicates negative label and 1 indicates positive label. This class is used by <BBoW, Tf, Tf-Idf>.
+dimension of train_corpus, test_corpus: (12500) [#reviews]
+dimension of Y_train, Y_test: (12500x1) [#reviews]
+
+NewData: This class is same as the class <Data> except that here, train_corpus and test_corpus is a list of list of strings(each string is a single word of a review file). This class is used by <GloVe, Word2Vec>.
+dimension of train_corpus, test_corpus: (12500x#words in respective review)
+dimension of Y_train, Y_test: (12500) [#reviews]
+
+MeanEmbeddingVectorizer: This class takes a python dict(key: words, value: corresponding vector) and train_corpus/test_corpus as input and transforms the train_corpus/test_corpus to a numpy array of dimension(12500 x feature size of each word). For every string(which is a review itself) in the corpus, it returns mean of vectors of corresponding words present in the string.
+
+TfidfEmbeddingVectorizer: This is same as <MeanEmbeddingVectorizer> except that in this case, mean of vectors of every word is taken after multipying the word with its tf-idf score.
+
+Implementation Details and Approach:
+BBoW: To convert train_corpus and test_corpus to Binary BoW(BBoW), I used the <CountVectorizer(binary=True, stop_words='english')> method of the library module <sklearn.feature_extraction.text>.
+Tf: To convert train_corpus and test_corpus to tf vector, I used the <TfidfVectorizer(stop_words='english', use_idf=False)> method of the library module <sklearn.feature_extraction.text>.
+Tf-Idf: To convert train_corpus and test_corpus to tf-idf vector, I used the <TfidfVectorizer(stop_words='english')> method of the library module <sklearn.feature_extraction.text>.
+GloVe: For this, I have used pretrained word vector representations available on Stanford website. This has two parts:
+	i. MeanEmbeddingVector: When train_corpus/test_corpus along with word vector representation is given as input to <MeanEmbeddingVectorizer> class(implemented in <src/util.py>), this class transforms the corpus to feature vectors by a mechanism discussed in previous section.
+	ii. TfidfEmbeddingVectorizer: When train_corpus/test_corpus along with word vector representation is given as input to <TfidfEmbeddingVectorizer> class(implemented in <src/util.py>), this class transforms the corpus to feature vectors by a mechanism discussed in previous section.
+
+Word2Vec: I have trained this model on the given dataset(Stanford movie review) using <Word2Vec> method of <gensim.models.word2vec> python module. This method takes a copus(train_corpus/test_corpus) as input and returns a dictionary containing feature vectors of the words as in the case of GloVe discussed above. The remaing mechanism is same as that of GloVe.
+
+Logistic_regression: I obtain the feature vector for every movie_review from (BBoW, Tf, Tf-Idf, GloVe, Word2Vec) and then
+i. at the time of training: use the method <LogisticRegression()> available in the python module <sklearn.linear_model> to train the model
+ii. at the time of test: use the above trianed model to predict the class(0 or 1).
+
+Naive_Bayes: I obtain the feature vector for every movie_review from (BBoW, Tf, Tf-Idf, GloVe, Word2Vec) and then
+i. at the time of training: use the method <BernoulliNB()> available in the python module <sklearn.naive_bayes> to train the model
+ii. at the time of test: use the above trianed model to predict the class(0 or 1).
+
+Perceptron: I obtain the feature vector for every movie_review from (BBoW, Tf, Tf-Idf, GloVe, Word2Vec) and then
+i. at the time of training: use the method <MLPClassifier()> available in the python module <sklearn.neural_network> to train the model
+ii. at the time of test: use the above trianed model to predict the class(0 or 1).
+
+SVM: I obtain the feature vector for every movie_review from (BBoW, Tf, Tf-Idf, GloVe, Word2Vec) and then
+i. at the time of training: use the method <SVC()> available in the python module <sklearn.svm> to train the model
+ii. at the time of test: use the above trianed model to predict the class(0 or 1).
+
+Note: For feeding the feature representations to classifiers, I used the <Pipeline()> method of the python module <sklearn.pipeline>. This method maes the training faster.
+

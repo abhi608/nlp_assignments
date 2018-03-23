@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 #---------------------------------------TfIdf-------------------------------------------------
 train_corpus, test_corpus, Y_train, Y_test = Data().getData()
-text_clf = Pipeline([('vect', TfidfVectorizer(stop_words='english')), ('clf', MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(100,)))])
+text_clf = Pipeline([('vect', TfidfVectorizer(stop_words='english')), ('clf', MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(10,)))])
 print "training start!"
 text_clf.fit(train_corpus, Y_train)
 print "training complete!"

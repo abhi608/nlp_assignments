@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 #---------------------------------------BoW-------------------------------------------------
 train_corpus, test_corpus, Y_train, Y_test = Data().getData()
-text_clf = Pipeline([('vect', CountVectorizer(binary=True, stop_words='english')), ('clf', MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(100,)))])
+text_clf = Pipeline([('vect', CountVectorizer(binary=True, stop_words='english')), ('clf', MLPClassifier(solver='adam', alpha=1e-5, hidden_layer_sizes=(10,)))])
 print "training start!"
 text_clf.fit(train_corpus, Y_train)
 print "training complete!"
@@ -17,5 +17,3 @@ print "prediction complete!"
 accuracy = (Y_test == Y_pred).sum() / Y_test.shape[0]
 print "bBoW_perceptron_Accuracy: ", accuracy
 #-------------------------------------------------------------------------------------------
-
-

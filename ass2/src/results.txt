@@ -1,0 +1,121 @@
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+bBoW_logistic_Accuracy:  0.86484
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+glove_MeanEmbeddingVectorizer_logistic_Accuracy:  0.6306
+training start!
+training complete!
+prediction complete!
+glove_TfidfEmbeddingVectorizer_logistic_Accuracy:  0.63516
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+tf_logistic_Accuracy:  0.8736
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+tfidf_logistic_Accuracy:  0.88012
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+word2vec_MeanEmbeddingVectorizer_logistic_Accuracy:  0.59296
+training start!
+training complete!
+prediction complete!
+word2vec_TfidfEmbeddingVectorizer_logistic_Accuracy:  0.60748
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+bBoW_naiveBayes_Accuracy:  0.81496
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+glove_MeanEmbeddingVectorizer_naiveBayes_Accuracy:  0.56964
+training start!
+training complete!
+prediction complete!
+glove_TfidfEmbeddingVectorizer_naiveBayes_Accuracy:  0.56776
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+tf_naiveBayes_Accuracy:  0.81496
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+tfidf_naiveBayes_Accuracy:  0.81496
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+word2vec_MeanEmbeddingVectorizer_naiveBayes_Accuracy:  0.54088
+training start!
+training complete!
+prediction complete!
+word2vec_TfidfEmbeddingVectorizer_naiveBayes_Accuracy:  0.5452
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+bBoW_perceptron_Accuracy:  0.85284
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+glove_MeanEmbeddingVectorizer_perceptron_Accuracy:  0.62144
+training start!
+training complete!
+prediction complete!
+glove_TfidfEmbeddingVectorizer_perceptron_Accuracy:  0.62992
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+tf_perceptron_Accuracy:  0.84372
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+tfidf_perceptron_Accuracy:  0.84168
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+word2vec_MeanEmbeddingVectorizer_perceptron_Accuracy:  0.58092
+training start!
+training complete!
+prediction complete!
+word2vec_TfidfEmbeddingVectorizer_perceptron_Accuracy:  0.5996
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+bBoW_svm_Accuracy:  0.74536
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+glove_MeanEmbeddingVectorizer_svm_Accuracy:  0.53612
+training start!
+training complete!
+prediction complete!
+glove_TfidfEmbeddingVectorizer_svm_Accuracy:  0.54992
+---------------------------------------------------------------------------------------------------------------------
+training start!
+training complete!
+prediction complete!
+tf_svm_Accuracy:  0.6522
+---------------------------------------------------------------------------------------------------------------------
+
+

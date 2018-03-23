@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 
 #---------------------------------------Glove-------------------------------------------------
 train_corpus, test_corpus, Y_train, Y_test = Data().getData()
-with open("./glove/glove.6B.50d.txt", "rb") as lines:
+with open("./glove/glove.6B.300d.txt", "rb") as lines:
     w2v = {line.split()[0]: np.array(map(float, line.split()[1:])) for line in lines}
 
     #-------------------------MeanEmbeddingVectorizer-------------------------

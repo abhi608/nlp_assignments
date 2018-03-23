@@ -8,7 +8,7 @@ from util import Data, MeanEmbeddingVectorizer, TfidfEmbeddingVectorizer, NewDat
 
 #---------------------------------------Word2vec-------------------------------------------------
 train_corpus, test_corpus, Y_train, Y_test = NewData().getData()
-model = Word2Vec(train_corpus, size=50, window=5, min_count=5, workers=2)
+model = Word2Vec(train_corpus, size=300, window=5, min_count=5, workers=2)
 w2v = {w: vec for w, vec in zip(model.wv.index2word, model.wv.syn0)}
 train_corpus, test_corpus, Y_train, Y_test = Data().getData()
 #-------------------------MeanEmbeddingVectorizer-------------------------

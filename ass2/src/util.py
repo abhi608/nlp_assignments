@@ -27,6 +27,7 @@ class Data:
 
 	def getData(self):
 		return (self.train_corpus, self.test_corpus, self.Y_train, self.Y_test)
+		
 
 class NewData:
 	def __init__(self):
@@ -52,134 +53,6 @@ class NewData:
 
 	def getData(self):
 		return (self.train_corpus, self.test_corpus, self.Y_train, self.Y_test)
-
-
-class BoW:
-	def __init__(self):
-		#------------------------reading data from corpus-----------------------------------------------------
-		train_datadir = ["./data/train/pos/", "./data/train/neg/"]
-		test_datadir = ["./data/test/pos/", "./data/test/neg/"]
-		train_corpus = []
-		test_corpus = []
-		for i in range(len(train_datadir)):
-			cur_dir = train_datadir[i]
-			for filename in os.listdir(cur_dir):
-				with open(cur_dir+filename, 'r') as myfile:
-					data=myfile.read()
-					train_corpus.append(data)
-
-		for i in range(len(test_datadir)):
-			cur_dir = test_datadir[i]
-			for filename in os.listdir(cur_dir):
-				with open(cur_dir+filename, 'r') as myfile:
-					data=myfile.read()
-					test_corpus.append(data)
-		# print len(corpus)	
-		#------------------------------------------------------------------------------------------------------
-
-		#-------------------------------converting corpus to bBoW----------------------------------------------
-		vectorizer = CountVectorizer(binary=True, stop_words='english').fit(train_corpus)
-		self.X_train = vectorizer.transform(train_corpus)
-		self.X_test = vectorizer.transform(test_corpus)
-		print self.X_train.shape, self.X_test.shape
-		# print vectorizer.transform(['Something completely new.']).shape
-		#------------------------------------------------------------------------------------------------------
-
-	def getTrainData(self):
-		Y_train = np.concatenate((np.ones((12500), dtype=int), np.zeros((12500), dtype=int)))
-		return (self.X_train, Y_train)
-
-	def getTestData(self):
-		Y_test = np.concatenate((np.ones((12500), dtype=int), np.zeros((12500), dtype=int)))
-		return (self.X_test, Y_test)
-
-
-class Tf:
-	def __init__(self):
-		#------------------------reading data from corpus-----------------------------------------------------
-		train_datadir = ["./data/train/pos/", "./data/train/neg/"]
-		test_datadir = ["./data/test/pos/", "./data/test/neg/"]
-		train_corpus = []
-		test_corpus = []
-		for i in range(len(train_datadir)):
-			cur_dir = train_datadir[i]
-			for filename in os.listdir(cur_dir):
-				with open(cur_dir+filename, 'r') as myfile:
-					data=myfile.read()
-					train_corpus.append(data)
-
-		for i in range(len(test_datadir)):
-			cur_dir = test_datadir[i]
-			for filename in os.listdir(cur_dir):
-				with open(cur_dir+filename, 'r') as myfile:
-					data=myfile.read()
-					test_corpus.append(data)
-		# print len(corpus)
-		#------------------------------------------------------------------------------------------------------
-
-		#-------------------------------converting corpus to bBoW----------------------------------------------
-		vectorizer1 = CountVectorizer(stop_words='english').fit(train_corpus)
-		self.X_train = vectorizer1.transform(train_corpus)
-		self.X_test = vectorizer1.transform(test_corpus)
-		vectorizer2 = TfidfTransformer(use_idf=False).fit(self.X_train)
-		self.X_train = vectorizer2.transform(self.X_train)
-		self.X_test = vectorizer2.transform(self.X_test)
-		print self.X_train.shape, self.X_test.shape
-		# print self.X
-		# print vectorizer.transform(['Something completely new.']).shape
-		#------------------------------------------------------------------------------------------------------
-
-	def getTrainData(self):
-		Y_train = np.concatenate((np.ones((12500), dtype=int), np.zeros((12500), dtype=int)))
-		return (self.X_train, Y_train)
-
-	def getTestData(self):
-		Y_test = np.concatenate((np.ones((12500), dtype=int), np.zeros((12500), dtype=int)))
-		return (self.X_test, Y_test)
-
-
-class TfIdf:
-	def __init__(self):
-		#------------------------reading data from corpus-----------------------------------------------------
-		train_datadir = ["./data/train/pos/", "./data/train/neg/"]
-		test_datadir = ["./data/test/pos/", "./data/test/neg/"]
-		train_corpus = []
-		test_corpus = []
-		for i in range(len(train_datadir)):
-			cur_dir = train_datadir[i]
-			for filename in os.listdir(cur_dir):
-				with open(cur_dir+filename, 'r') as myfile:
-					data=myfile.read()
-					train_corpus.append(data)
-
-		for i in range(len(test_datadir)):
-			cur_dir = test_datadir[i]
-			for filename in os.listdir(cur_dir):
-				with open(cur_dir+filename, 'r') as myfile:
-					data=myfile.read()
-					test_corpus.append(data)
-		# print len(corpus)
-		#------------------------------------------------------------------------------------------------------
-
-		#-------------------------------converting corpus to bBoW----------------------------------------------
-		vectorizer1 = CountVectorizer(stop_words='english').fit(train_corpus)
-		self.X_train = vectorizer1.transform(train_corpus)
-		self.X_test = vectorizer1.transform(test_corpus)
-		vectorizer2 = TfidfTransformer().fit(self.X_train)
-		self.X_train = vectorizer2.transform(self.X_train)
-		self.X_test = vectorizer2.transform(self.X_test)
-		print self.X_train.shape, self.X_test.shape
-		# print self.X
-		# print vectorizer.transform(['Something completely new.']).shape
-		#------------------------------------------------------------------------------------------------------
-
-	def getTrainData(self):
-		Y_train = np.concatenate((np.ones((12500), dtype=int), np.zeros((12500), dtype=int)))
-		return (self.X_train, Y_train)
-
-	def getTestData(self):
-		Y_test = np.concatenate((np.ones((12500), dtype=int), np.zeros((12500), dtype=int)))
-		return (self.X_test, Y_test)
 
 
 class MeanEmbeddingVectorizer(object):
