@@ -1,8 +1,9 @@
 import pickle
 import torch
+import numpy as np 
 from torch.autograd import Variable as Var
-from model import Model
 from torch.autograd import Variable as Var
+from sklearn.linear_model import SGDClassifier
 
 
 dtype = torch.FloatTensor
@@ -42,24 +43,34 @@ for i in range(len(corpus)):
 
 print len(word_vocabulary), len(pos_vocabulary), len(rel_vocabulary)
 
+y = []
+for i in range(2*len(rel_vocabulary)+1):
+	y.append(i)
 
-model = Model(len(word_vocabulary)+1, len(pos_vocabulary)+1, len(rel_vocabulary)+1, embedding_size=300, classes=3)
-criterion = torch.nn.CrossEntropyLoss()
-# optimizer = torch.optim.Adam(model.parameters(), lr=0.05)
-# optimizer = torch.optim.SGD(model.parameters(), lr=0.05, momentum=0.9)
-optimizer = torch.optim.RMSprop(model.parameters(), lr=0.05, momentum=0.9)
+y = np.array(y)
 
+clf2 = SGDClassifier(loss='log')
+
+global_loss = 0.0
+batch = 0
+total = 0
+accuracy = 0.0
+test_count = 0
+isTest = False
 for i in range(len(corpus)):
+	total += 1
 	sigma = []
 	beta = []
 	idx_to_word = {}
 	idx_to_pos = {}
+	new_idx_to_res = {}
 	head = {}
 	child = {}
 	idx_to_res = {}
 	for j in range(len(corpus[i])):
 		idx_to_word[corpus[i][j][0]] = corpus[i][j][1]
 		idx_to_pos[corpus[i][j][1]] = corpus[i][j][3]
+		new_idx_to_res[corpus[i][j][0]] = corpus[i][j][7]
 		idx_to_res[corpus[i][j][1]] = corpus[i][j][7]
 		beta.append(corpus[i][j][0])
 		head[corpus[i][j][0]] = corpus[i][j][6]
@@ -80,9 +91,10 @@ for i in range(len(corpus)):
 	x_rel_main = []
 	y_cur = []
 	loss_final = 0.0
-	mini_batch = 0
 	while len(beta) > 0:
-		mini_batch += 1
+		action = -1
+		cur_res = None
+		batch += 1
 		x_word = []
 		x_pos = []
 		x_rel = []
@@ -546,6 +558,7 @@ for i in range(len(corpus)):
 		elif sigma[0] in head and head[sigma[0]] == beta[0]:
 			action = 1
 			# print sigma[0]
+			cur_res = new_idx_to_res[sigma[0]]
 			head.pop(sigma[0], None)
 			sigma.pop(0)	
 			# print "LEFT"
@@ -558,6 +571,7 @@ for i in range(len(corpus)):
 					break
 			if tmp1 == False and head[beta[0]] == sigma[0]:
 				action = 2
+				cur_res = new_idx_to_res[sigma[0]]
 				head.pop(beta[0], None)
 				beta.pop(0)
 				tmp = sigma.pop(0)
@@ -569,7 +583,7 @@ for i in range(len(corpus)):
 				sigma.insert(0, tmp)
 				# print "SHIFT-1"
 		count += 1
-		y_cur.append(action)
+		# y_cur.append(action)
 
 		for k in range(len(x_word)):
 			try:
@@ -605,19 +619,49 @@ for i in range(len(corpus)):
 				res = [0] * (len(rel_vocabulary)+1)
 				x_rel.append(res)
 
-		#------------------------------Train neural net-------------------------------------------
-		x_word_tensor = Var(torch.FloatTensor(x_word)).view(1,-1)
-		x_pos_tensor = Var(torch.FloatTensor(x_pos)).view(1,-1)
-		x_rel_tensor = Var(torch.FloatTensor(x_rel)).view(1,-1)
-		y_desired = [action]
-		y_desired = Var(torch.LongTensor(y_desired))
-		optimizer.zero_grad()
-		y_predicted = model(x_word_tensor, x_pos_tensor, x_rel_tensor)
-		loss = criterion(y_predicted, y_desired)
-		loss_final += loss.data[0]
-		loss.backward()
-       	optimizer.step()
-	print "datapoint: ", str(i), "|", "loss: ", loss_final/mini_batch
+		# print action, cur_res
+		x_word_main.append(np.array(x_word).reshape(-1))
+		x_pos_main.append(np.array(x_pos).reshape(-1))
+		x_rel_main.append(np.array(x_rel).reshape(-1))
+		y_desired = -1
+		if action == 0:
+			y_desired = 0
+		elif action == 1:
+			y_desired = 1 + rel_vocabulary.index(cur_res)
+		elif action == 2:
+			y_desired = 1 + len(rel_vocabulary) + rel_vocabulary.index(cur_res)
+		else:
+			raise ValueError('action not in desired range')
+		y_cur.append(y_desired)
+	#------------------------------Train SGDClassifier-------------------------------------------
+	x_word_main = np.array(x_word_main)
+	x_pos_main = np.array(x_pos_main)
+	x_rel_main = np.array(x_rel_main)
+	x = np.concatenate((x_word_main, x_pos_main, x_rel_main), axis=1)
+	y_cur = np.array(y_cur)
+
+	if isTest:
+		# print "TEST"
+		tmp_accuracy = float(clf2.score(x,y_cur))
+		print "Test_accuracy: " + str(tmp_accuracy)
+		i = test_count
+		isTest = False
+	else:
+		# print "TRAIN"
+		if i == 0:
+			clf2.partial_fit(x, y_cur, classes=y)
+			accuracy += float(clf2.score(x,y_cur))
+		else:
+			accuracy += float(clf2.score(x,y_cur))
+			clf2.partial_fit(x, y_cur, classes=y)
+		if i%10 == 0:
+			print "dataset: " + str(i) + " | Train_accuracy: " + str(accuracy/total)
+			accuracy = 0.0
+			total = 0
+			test_count = i
+			isTest = True
+			i = len(corpus) - 2
+
 
 
 
