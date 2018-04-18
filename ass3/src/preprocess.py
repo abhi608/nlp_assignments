@@ -1,21 +1,30 @@
 import pickle
+import torch
+from torch.autograd import Variable as Var
+from model import Model
+from torch.autograd import Variable as Var
+
+
+dtype = torch.FloatTensor
+if torch.cuda.device_count() > 0:
+    dtype = torch.cuda.FloatTensor
 
 #-------------------loading data corpus--------------------------------------------
 treebank = "./train.conll"
 print "Loading treebank"
 corpus = []
 sentence = []
-# cnt = 0
+cnt = 0
 with open (treebank, 'r') as f:
 	for line in f:
 		line = line.strip()
 		if not line:
 			corpus.append(sentence)
 			sentence = []
-			# cnt += 1
+			cnt += 1
 			# print sentence
 			# if cnt > 5:
-				# break
+			# 	break
 		else:
 			sentence.append(line.split('\t'))
 
@@ -33,6 +42,11 @@ for i in range(len(corpus)):
 
 print len(word_vocabulary), len(pos_vocabulary), len(rel_vocabulary)
 
+
+model = Model(len(word_vocabulary)+1, len(pos_vocabulary)+1, len(rel_vocabulary)+1, embedding_size=50, classes=3)
+criterion = torch.nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.05)
+
 for i in range(len(corpus)):
 	sigma = []
 	beta = []
@@ -41,8 +55,6 @@ for i in range(len(corpus)):
 	head = {}
 	child = {}
 	idx_to_res = {}
-	# leftmost = {}
-	# rightmost = {}
 	for j in range(len(corpus[i])):
 		idx_to_word[corpus[i][j][0]] = corpus[i][j][1]
 		idx_to_pos[corpus[i][j][1]] = corpus[i][j][3]
@@ -51,20 +63,12 @@ for i in range(len(corpus)):
 		head[corpus[i][j][0]] = corpus[i][j][6]
 		if corpus[i][j][6] not in child:
 			child[corpus[i][j][6]] = [int(corpus[i][j][0])]
-			# res_child[corpus[i][j][6]] = [corpus[i][j][7]]
 		else:
 			child[corpus[i][j][6]].append(int(corpus[i][j][0]))
-			# res_child[corpus[i][j][6]].append(corpus[i][j][7])
 
 
 	for key in child:
-		# print child[key]
-		# print res_child[key]
-		# tmp = [x for _,x in sorted(zip(child[key],res_child[key]))]
-		# res_child[key] = tmp
 		child[key].sort()
-		# print child[key]
-		# print res_child[key]
 
 	sigma.append('-1') #-1 = ROOT
 	transitions = []
@@ -73,7 +77,10 @@ for i in range(len(corpus)):
 	x_pos_main = []
 	x_rel_main = []
 	y_cur = []
+	loss_final = 0.0
+	mini_batch = 0
 	while len(beta) > 0:
+		mini_batch += 1
 		x_word = []
 		x_pos = []
 		x_rel = []
@@ -81,16 +88,11 @@ for i in range(len(corpus)):
 			tmp = sigma[0]
 			if tmp == '-1':
 				cur = [0] * (len(word_vocabulary)+1)
-				# pos = [0] * (len(pos_vocabulary)+1)
 				cur[0] = 1
-				# pos[0] = 1
 				x_word.append(cur)
-				# x_pos.append(pos)
 			else:
 				cur = [0] * (len(word_vocabulary)+1)
-				# pos = [0] * (len(pos_vocabulary)+1)
 				cur[word_vocabulary.index(idx_to_word[tmp])+1] = 1
-				# pos[pos_vocabulary.index(idx_to_pos[tmp])+1] = 1 
 				x_word.append(cur)
 
 			if tmp in child:
@@ -558,7 +560,6 @@ for i in range(len(corpus)):
 				beta.pop(0)
 				tmp = sigma.pop(0)
 				beta.insert(0, tmp)
-				# print beta[0]
 				# print "RIGHT"
 			else:
 				action = 0
@@ -585,43 +586,36 @@ for i in range(len(corpus)):
 				pos = [0] * (len(pos_vocabulary)+1)
 				x_pos.append(pos)
 
-		# print x_word
-		arr = [1,2,3,4,5,6,8,9,10,11,12,13]
 		for k in range(len(x_word)):
-			if k in arr:
-				try:
-					idx = x_word[k].index(1)
-					if idx != 0:
-						tmp_word = word_vocabulary[idx-1]
-						tmp_res = idx_to_res[tmp_word]
-						res = [0] * (len(rel_vocabulary)+1)
-						res[rel_vocabulary.index(tmp_res)+1] = 1
-						x_rel.append(res)
-					else:
-						res = [0] * (len(rel_vocabulary)+1)
-						res[idx] = 1
-						x_rel.append(res)
-				except:
+			try:
+				idx = x_word[k].index(1)
+				if idx != 0:
+					tmp_word = word_vocabulary[idx-1]
+					tmp_res = idx_to_res[tmp_word]
 					res = [0] * (len(rel_vocabulary)+1)
+					res[rel_vocabulary.index(tmp_res)+1] = 1
 					x_rel.append(res)
+				else:
+					res = [0] * (len(rel_vocabulary)+1)
+					res[idx] = 1
+					x_rel.append(res)
+			except:
+				res = [0] * (len(rel_vocabulary)+1)
+				x_rel.append(res)
 
-		
-		#x_word, x_pos, x_rel
-
-				
-
-
-		# x_word_main.append(x_word)
-		# x_pos_main.append(x_pos)
-		# x_rel_main.append(x_rel)
-	# tmp_dict = {'word': x_word_main,
-	# 			'pos': x_pos_main,
-	# 			'rel': x_rel_main
-	# 			}
-	# with open('./data/' + str(i) + '.txt', 'wb') as file:
-	# 	pickle.dump(tmp_dict, file)
-	print len(y_cur), len(x_word_main), len(x_pos_main), len(x_rel_main)
-	print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+		#------------------------------Train neural net-------------------------------------------
+		x_word_tensor = Var(torch.FloatTensor(x_word)).view(1,-1)
+		x_pos_tensor = Var(torch.FloatTensor(x_pos)).view(1,-1)
+		x_rel_tensor = Var(torch.FloatTensor(x_rel)).view(1,-1)
+		y_desired = [action]
+		y_desired = Var(torch.LongTensor(y_desired))
+		optimizer.zero_grad()
+		y_predicted = model(x_word_tensor, x_pos_tensor, x_rel_tensor)
+		loss = criterion(y_predicted, y_desired)
+		loss_final += loss.data[0]
+		loss.backward()
+       	optimizer.step()
+	print "datapoint: ", str(i), "|", "loss: ", loss_final/mini_batch
 
 
 
