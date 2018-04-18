@@ -1,19 +1,21 @@
+import pickle
+
 #-------------------loading data corpus--------------------------------------------
 treebank = "./train.conll"
 print "Loading treebank"
 corpus = []
 sentence = []
-cnt = 0
+# cnt = 0
 with open (treebank, 'r') as f:
 	for line in f:
 		line = line.strip()
 		if not line:
 			corpus.append(sentence)
 			sentence = []
-			cnt += 1
+			# cnt += 1
 			# print sentence
-			if cnt > 5:
-				break
+			# if cnt > 5:
+				# break
 		else:
 			sentence.append(line.split('\t'))
 
@@ -29,7 +31,7 @@ for i in range(len(corpus)):
 		if corpus[i][j][7] not in rel_vocabulary:
 			rel_vocabulary.append(corpus[i][j][7])
 
-# print len(word_vocabulary), len(pos_vocabulary), len(rel_vocabulary)
+print len(word_vocabulary), len(pos_vocabulary), len(rel_vocabulary)
 
 for i in range(len(corpus)):
 	sigma = []
@@ -38,21 +40,31 @@ for i in range(len(corpus)):
 	idx_to_pos = {}
 	head = {}
 	child = {}
+	idx_to_res = {}
 	# leftmost = {}
 	# rightmost = {}
 	for j in range(len(corpus[i])):
 		idx_to_word[corpus[i][j][0]] = corpus[i][j][1]
 		idx_to_pos[corpus[i][j][1]] = corpus[i][j][3]
+		idx_to_res[corpus[i][j][1]] = corpus[i][j][7]
 		beta.append(corpus[i][j][0])
 		head[corpus[i][j][0]] = corpus[i][j][6]
 		if corpus[i][j][6] not in child:
 			child[corpus[i][j][6]] = [int(corpus[i][j][0])]
+			# res_child[corpus[i][j][6]] = [corpus[i][j][7]]
 		else:
 			child[corpus[i][j][6]].append(int(corpus[i][j][0]))
+			# res_child[corpus[i][j][6]].append(corpus[i][j][7])
 
 
 	for key in child:
+		# print child[key]
+		# print res_child[key]
+		# tmp = [x for _,x in sorted(zip(child[key],res_child[key]))]
+		# res_child[key] = tmp
 		child[key].sort()
+		# print child[key]
+		# print res_child[key]
 
 	sigma.append('-1') #-1 = ROOT
 	transitions = []
@@ -556,30 +568,59 @@ for i in range(len(corpus)):
 		count += 1
 		y_cur.append(action)
 
-		for k in len(x_word):
-			idx = x_word[k].index(1)
-			if idx != 0:
-				tmp_word = word_vocabulary[idx-1]
-				tmp_pos = idx_to_pos[tmp_word]
+		for k in range(len(x_word)):
+			try:
+				idx = x_word[k].index(1)
+				if idx != 0:
+					tmp_word = word_vocabulary[idx-1]
+					tmp_pos = idx_to_pos[tmp_word]
+					pos = [0] * (len(pos_vocabulary)+1)
+					pos[pos_vocabulary.index(tmp_pos)+1] = 1
+					x_pos.append(pos)
+				else:
+					pos = [0] * (len(pos_vocabulary)+1)
+					pos[idx] = 1
+					x_pos.append(pos)
+			except:
 				pos = [0] * (len(pos_vocabulary)+1)
-				pos[pos_vocabulary.index(pos)+1] = 1
 				x_pos.append(pos)
-			else:
-				pos = [0] * (len(pos_vocabulary)+1)
-				x_pos.append(pos)
-
-
-
 
 		# print x_word
-		# print sigma
-		# print beta
-		# print head
-		# print "X_word: ", x_word[17], len(x_word)
-		# print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-		x_word_main.append(x_word)
-		x_pos_main.append(x_pos)
-	print len(y_cur), len(x_word_main)
+		arr = [1,2,3,4,5,6,8,9,10,11,12,13]
+		for k in range(len(x_word)):
+			if k in arr:
+				try:
+					idx = x_word[k].index(1)
+					if idx != 0:
+						tmp_word = word_vocabulary[idx-1]
+						tmp_res = idx_to_res[tmp_word]
+						res = [0] * (len(rel_vocabulary)+1)
+						res[rel_vocabulary.index(tmp_res)+1] = 1
+						x_rel.append(res)
+					else:
+						res = [0] * (len(rel_vocabulary)+1)
+						res[idx] = 1
+						x_rel.append(res)
+				except:
+					res = [0] * (len(rel_vocabulary)+1)
+					x_rel.append(res)
+
+		
+		#x_word, x_pos, x_rel
+
+				
+
+
+		# x_word_main.append(x_word)
+		# x_pos_main.append(x_pos)
+		# x_rel_main.append(x_rel)
+	# tmp_dict = {'word': x_word_main,
+	# 			'pos': x_pos_main,
+	# 			'rel': x_rel_main
+	# 			}
+	# with open('./data/' + str(i) + '.txt', 'wb') as file:
+	# 	pickle.dump(tmp_dict, file)
+	print len(y_cur), len(x_word_main), len(x_pos_main), len(x_rel_main)
 	print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
 
