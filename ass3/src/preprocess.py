@@ -35,22 +35,21 @@ for i in range(len(corpus)):
 	sigma = []
 	beta = []
 	idx_to_word = {}
+	idx_to_pos = {}
 	head = {}
 	child = {}
 	# leftmost = {}
 	# rightmost = {}
 	for j in range(len(corpus[i])):
 		idx_to_word[corpus[i][j][0]] = corpus[i][j][1]
+		idx_to_pos[corpus[i][j][1]] = corpus[i][j][3]
 		beta.append(corpus[i][j][0])
 		head[corpus[i][j][0]] = corpus[i][j][6]
 		if corpus[i][j][6] not in child:
 			child[corpus[i][j][6]] = [int(corpus[i][j][0])]
 		else:
 			child[corpus[i][j][6]].append(int(corpus[i][j][0]))
-		# if corpus[i][j][6] not in leftmost or int(leftmost[corpus[i][j][6]]) > int(corpus[i][j][0]):
-		# 	leftmost[corpus[i][j][6]] = corpus[i][j][0]
-		# if corpus[i][j][6] not in rightmost or int(rightmost[corpus[i][j][6]]) < int(corpus[i][j][0]):
-		# 	rightmost[corpus[i][j][6]] = corpus[i][j][0]
+
 
 	for key in child:
 		child[key].sort()
@@ -70,11 +69,16 @@ for i in range(len(corpus)):
 			tmp = sigma[0]
 			if tmp == '-1':
 				cur = [0] * (len(word_vocabulary)+1)
+				# pos = [0] * (len(pos_vocabulary)+1)
 				cur[0] = 1
+				# pos[0] = 1
 				x_word.append(cur)
+				# x_pos.append(pos)
 			else:
 				cur = [0] * (len(word_vocabulary)+1)
-				cur[word_vocabulary.index(idx_to_word[tmp])+1] = 1 
+				# pos = [0] * (len(pos_vocabulary)+1)
+				cur[word_vocabulary.index(idx_to_word[tmp])+1] = 1
+				# pos[pos_vocabulary.index(idx_to_pos[tmp])+1] = 1 
 				x_word.append(cur)
 
 			if tmp in child:
@@ -551,6 +555,22 @@ for i in range(len(corpus)):
 				# print "SHIFT-1"
 		count += 1
 		y_cur.append(action)
+
+		for k in len(x_word):
+			idx = x_word[k].index(1)
+			if idx != 0:
+				tmp_word = word_vocabulary[idx-1]
+				tmp_pos = idx_to_pos[tmp_word]
+				pos = [0] * (len(pos_vocabulary)+1)
+				pos[pos_vocabulary.index(pos)+1] = 1
+				x_pos.append(pos)
+			else:
+				pos = [0] * (len(pos_vocabulary)+1)
+				x_pos.append(pos)
+
+
+
+
 		# print x_word
 		# print sigma
 		# print beta
@@ -558,6 +578,7 @@ for i in range(len(corpus)):
 		# print "X_word: ", x_word[17], len(x_word)
 		# print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 		x_word_main.append(x_word)
+		x_pos_main.append(x_pos)
 	print len(y_cur), len(x_word_main)
 	print "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 
