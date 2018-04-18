@@ -57,7 +57,14 @@ total = 0
 accuracy = 0.0
 test_count = 0
 isTest = False
-for i in range(len(corpus)):
+tst_accu = 0.0
+tst_cnt = 0
+test_index = len(corpus) - len(corpus)/100;
+print "len_corpus: ", len(corpus)
+print "test_index: ", test_index
+# for i in range(len(corpus))
+i = 0
+while i < len(corpus):
 	total += 1
 	sigma = []
 	beta = []
@@ -640,14 +647,24 @@ for i in range(len(corpus)):
 	x = np.concatenate((x_word_main, x_pos_main, x_rel_main), axis=1)
 	y_cur = np.array(y_cur)
 
+	# print i, isTest 
 	if isTest:
 		# print "TEST"
-		tmp_accuracy = float(clf2.score(x,y_cur))
-		print "Test_accuracy: " + str(tmp_accuracy)
-		i = test_count
-		isTest = False
+		# tmp_accuracy = float(clf2.score(x,y_cur))
+		tst_cnt += 1
+		tst_accu += float(clf2.score(x,y_cur))
+		if i == len(corpus) - 1:
+			i = test_count
+			isTest = False
+			print "Test_accuracy: " + str(tst_accu/tst_cnt)
+			tst_cnt = 0
+			tst_accu = 0.0
+		# print "Test_accuracy: " + str(tmp_accuracy)
+		# i = test_count
+		# isTest = False
 	else:
 		# print "TRAIN"
+		print "Epoch: ", i
 		if i == 0:
 			clf2.partial_fit(x, y_cur, classes=y)
 			accuracy += float(clf2.score(x,y_cur))
@@ -655,12 +672,13 @@ for i in range(len(corpus)):
 			accuracy += float(clf2.score(x,y_cur))
 			clf2.partial_fit(x, y_cur, classes=y)
 		if i%10 == 0:
-			print "dataset: " + str(i) + " | Train_accuracy: " + str(accuracy/total)
+			# print "dataset: " + str(i) + " | Train_accuracy: " + str(accuracy/total)
 			accuracy = 0.0
 			total = 0
 			test_count = i
 			isTest = True
-			i = len(corpus) - 2
+			i = test_index
+	i += 1
 
 
 
