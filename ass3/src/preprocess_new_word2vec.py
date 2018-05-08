@@ -1,9 +1,8 @@
 import pickle
 import torch
-import numpy as np 
 from torch.autograd import Variable as Var
+from model import Model
 from torch.autograd import Variable as Var
-from sklearn.linear_model import SGDClassifier
 
 
 dtype = torch.FloatTensor
@@ -43,29 +42,14 @@ for i in range(len(corpus)):
 
 print len(word_vocabulary), len(pos_vocabulary), len(rel_vocabulary)
 
-y = []
-for i in range(2*len(rel_vocabulary)+1):
-	y.append(i)
 
-y = np.array(y)
-
-clf2 = SGDClassifier(loss='log')
+model = Model(len(word_vocabulary)+1, len(pos_vocabulary)+1, len(rel_vocabulary)+1, embedding_size=50, classes=2*len(rel_vocabulary)+1, vocab=word_vocabulary)
+criterion = torch.nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
 global_loss = 0.0
 batch = 0
-total = 0
-accuracy = 0.0
-test_count = 0
-isTest = False
-tst_accu = 0.0
-tst_cnt = 0
-test_index = len(corpus) - len(corpus)/20;
-print "len_corpus: ", len(corpus)
-print "test_index: ", test_index
-# for i in range(len(corpus))
-i = 0
-while i < len(corpus):
-	total += 1
+for i in range(len(corpus)):
 	sigma = []
 	beta = []
 	idx_to_word = {}
@@ -590,7 +574,7 @@ while i < len(corpus):
 				sigma.insert(0, tmp)
 				# print "SHIFT-1"
 		count += 1
-		# y_cur.append(action)
+		y_cur.append(action)
 
 		for k in range(len(x_word)):
 			try:
@@ -627,59 +611,32 @@ while i < len(corpus):
 				x_rel.append(res)
 
 		# print action, cur_res
-		x_word_main.append(np.array(x_word).reshape(-1))
-		x_pos_main.append(np.array(x_pos).reshape(-1))
-		x_rel_main.append(np.array(x_rel).reshape(-1))
-		y_desired = -1
+		#------------------------------Train neural net-------------------------------------------
+		x_word_tensor = Var(torch.FloatTensor(x_word)).view(1,-1)
+		x_pos_tensor = Var(torch.FloatTensor(x_pos)).view(1,-1)
+		x_rel_tensor = Var(torch.FloatTensor(x_rel)).view(1,-1)
+		# y_desired = [0] * (2*len(rel_vocabulary)+1)
+		y_desired = [-1]
 		if action == 0:
-			y_desired = 0
+			y_desired = [0]
 		elif action == 1:
-			y_desired = 1 + rel_vocabulary.index(cur_res)
+			y_desired = [1 + rel_vocabulary.index(cur_res)]
 		elif action == 2:
-			y_desired = 1 + len(rel_vocabulary) + rel_vocabulary.index(cur_res)
+			y_desired = [1 + len(rel_vocabulary) + rel_vocabulary.index(cur_res)]
 		else:
 			raise ValueError('action not in desired range')
-		y_cur.append(y_desired)
-	#------------------------------Train SGDClassifier-------------------------------------------
-	x_word_main = np.array(x_word_main)
-	x_pos_main = np.array(x_pos_main)
-	x_rel_main = np.array(x_rel_main)
-	x = np.concatenate((x_word_main, x_pos_main, x_rel_main), axis=1)
-	y_cur = np.array(y_cur)
-
-	# print i, isTest 
-	if isTest:
-		# print "TEST"
-		# tmp_accuracy = float(clf2.score(x,y_cur))
-		tst_cnt += 1
-		tst_accu += float(clf2.score(x,y_cur))
-		if i == len(corpus) - 1:
-			i = test_count
-			isTest = False
-			print "Test_accuracy: " + str(tst_accu/tst_cnt)
-			tst_cnt = 0
-			tst_accu = 0.0
-		# print "Test_accuracy: " + str(tmp_accuracy)
-		# i = test_count
-		# isTest = False
-	else:
-		# print "TRAIN"
-		print "Epoch: ", i
-		if i == 0:
-			clf2.partial_fit(x, y_cur, classes=y)
-			accuracy += float(clf2.score(x,y_cur))
-		else:
-			accuracy += float(clf2.score(x,y_cur))
-			clf2.partial_fit(x, y_cur, classes=y)
-		if i%10 == 0:
-			# print "dataset: " + str(i) + " | Train_accuracy: " + str(accuracy/total)
-			accuracy = 0.0
-			total = 0
-			test_count = i
-			isTest = True
-			i = test_index
-	i += 1
-
+		y_desired = Var(torch.LongTensor(y_desired))
+		optimizer.zero_grad()
+		y_predicted = model(x_word_tensor, x_pos_tensor, x_rel_tensor)
+		loss = criterion(y_predicted, y_desired)
+		global_loss += loss.data[0]
+		loss.backward()
+       	optimizer.step()
+   	if i % 10 == 0:
+   		print "datapoint: ", str(i), "|", "loss: ", global_loss/batch
+    	global_loss = 0.0
+    	batch = 0
+	print "datapoint: ", str(i)
 
 
 
